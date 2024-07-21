@@ -1,0 +1,132 @@
+version: "3.9"
+services:
+
+  keycloak:
+    container_name: keycloak
+    image: quay.io/keycloak/keycloak:18.0.2
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin
+    ports:
+      - "8080:8080"
+    networks:
+      - backend
+    command:
+      - start-dev
+  ReclamationMS:
+    container_name: Reclamation
+    build: ./ReclamationMicroService
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+    ports:
+      - "8060:8060"  
+    image: "reclamation"
+    depends_on:
+      - discovery
+      - gateway
+      - keycloak    
+    networks:
+      - backend
+  ContractMS:
+    container_name: Contract
+    build: ./ContractMS
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+    ports:
+      - "8071:8071"  
+    image: "contract"
+    depends_on:
+      - discovery
+      - gateway
+      - keycloak    
+    networks:
+      - backend 
+  ForumMS:
+    container_name: Forum
+    build: ./ForumMicroService
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+    ports:
+      - "8099:8099"  
+    image: "forum"
+    depends_on:
+      - discovery
+      - gateway
+      - keycloak    
+    networks:
+      - backend 
+      
+  discovery:
+    container_name: discovery
+    build: ./EurekaServer
+    ports:
+      - "8761:8761"
+    image: "discovery-service"
+    networks:
+      - backend
+
+  ProductMS:
+    container_name: product
+    build: ./ProductMicroService
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+    ports:
+      - "8082:8082"
+    image: "product"
+    networks:
+      - backend
+    depends_on:
+      - discovery
+      - gateway
+      - keycloak
+  OfferMS:
+    container_name: offer
+    build: ./OfferMicroService
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+    ports:
+      - "8081:8081"
+    image: "offer"
+    depends_on:
+      - discovery
+      - gateway
+      
+    networks:
+      - backend
+  
+        
+  gateway:
+    container_name: gateway
+    build: ./Gateway
+    environment:
+      - eureka.client.serviceUrl.defaultZone=http://discovery:8761/eureka/
+    ports:
+      - "8090:8090"
+    image: "gateway"
+    networks:
+      - backend
+    depends_on:
+      - discovery
+  Mongo:
+    container_name: Mongo
+    image: "mongo:5-focal"
+    ports:
+      - "27017:27017"
+    depends_on:
+      - discovery
+    networks:
+      - backend
+
+  api:
+    build: ./MicroServiceNodeJs
+    ports:
+      # local->container
+      - 3005:3005
+    depends_on: 
+      - Mongo
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge

@@ -1,0 +1,13 @@
+{
+  "realm": "MicroService",
+  "auth-server-url": "http://keycloak:8080/",
+  "ssl-required": "external",
+  "resource": "MicroServiceNodeJs",
+  "verify-token-audience": true,
+  "credentials": {
+    "secret": "VDnbOqOTa5hndjTXPt85vcWWHM3HhmIz"
+  },
+  "use-resource-role-mappings": true,
+  "confidential-port": 0,
+  "policy-enforcer": {}
+}
